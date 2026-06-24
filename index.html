@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Profil Jaune #FFFF04</title>
+<style>
+  *{box-sizing:border-box}
+  body{font-family:Arial,sans-serif;margin:0;padding:15px;text-align:center;background:#f5f5f5;min-height:100vh;display:flex;flex-direction:column}
+  .content{flex:1}
+  h1{color:#FFD700;margin-bottom:5px}
+  .box{background:white;padding:15px;border-radius:10px;margin:15px 0;box-shadow:0 2px 5px rgba(0,0,0,0.1)}
+  input[type=file],button,input[type=text]{width:100%;max-width:400px;margin:8px 0;padding:12px;border:1px solid #ddd;border-radius:5px;font-size:16px}
+  button{background:#FFD700;cursor:pointer;border:none;color:#333;font-weight:bold}
+  button:active{background:#e6c200}
+  button:disabled{background:#ccc;cursor:not-allowed}
+  #preview{max-width:100%;max-height:300px;object-fit:contain;margin:15px auto;border-radius:8px;display:block}
+  #guestbook{text-align:left;margin-top:20px}
+  #guestbook ul{list-style:none;padding:0;margin:0}
+  #guestbook li{padding:8px 0;border-bottom:1px solid #eee;word-break:break-all}
+  .legal{font-size:12px;color:#666;line-height:1.5}
+  .error{color:#d32f2f;font-size:14px;margin-top:5px}
+  @media (max-width:480px){body{padding:10px}.box{padding:12px}}
+</style>
+</head>
+<body>
+<div class="content">
+<h1>Profil Jaune #FFFF04</h1>
+
+<div class="box">
+  <p>Transformez votre photo de profil avec un filtre jaune #FFFF04</p>
+  <input type="file" id="upload" accept="image/*">
+  <div id="preview-container" style="display:none">
+    <img id="preview">
+    <button onclick="applyFilter()">Appliquer le filtre jaune</button>
+    <canvas id="canvas" style="display:none"></canvas>
+    <a id="download" style="display:none" download="profil-jaune.png">Télécharger</a>
+  </div>
+</div>
+
+<div class="box">
+  <h2>Livre d'or</h2>
+  <p>Ajoutez votre @Instagram après avoir converti votre photo</p>
+  <input type="text" id="username" placeholder="@votre_nom" maxlength="50">
+  <div id="username-error" class="error"></div>
+  <button id="add-btn" onclick="addToGuestbook()">Ajouter</button>
+  <div id="guestbook"><ul id="guestlist"></ul></div>
+</div>
+</div>
+
+<div class="box legal">
+  <h3>Mentions légales</h3>
+  <p>Ce service est gratuit et fourni tel quel, sans garantie. Les noms d'utilisateur ajoutés au livre d'or sont publics et <strong>ne peuvent pas être supprimés</strong>. En utilisant ce service, vous acceptez que votre pseudonyme soit affiché publiquement. Nous ne sommes pas responsables de l'utilisation des informations que vous partagez. Ce site ne collecte aucune autre donnée personnelle. L'ajout de noms est limité à 10 par minute par adresse IP pour prévenir les abus.</p>
+</div>
+
+<script>
+const upload = document.getElementById('upload');
+const preview = document.getElementById('preview');
+const previewContainer = document.getElementById('preview-container');
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+const download = document.getElementById('download');
+const usernameInput = document.getElementById('username');
+const guestlist = document.getElementById('guestlist');
+const addBtn = document.getElementById('add-btn');
+const usernameError = document.getElementById('username-error');
+
+let originalImage = null;
+
+// ponytail: server-side guestbook via vercel function
+async function loadGuestbook() {
+  try {
+    const res = await fetch('/api/guestbook');
+    const data = await res.json();
+    const list = data.result || [];
+    guestlist.innerHTML = list.map(u => `<li>${esc(u)}</li>`).join('');
+  } catch(e) { guestlist.innerHTML = '<li>Erreur de chargement</li>'; }
+}
+
+function validateUsernameLocal(username) {
+  if (!username) return 'Veuillez entrer un nom';
+  if (username.length > 50) return 'Trop long (max 50 caractères)';
+  if (!/^@?[a-zA-Z0-9_.]+$/.test(username)) {
+    return 'Seuls @, lettres, chiffres, . et _ sont autorisés';
+  }
+  return null;
+}
+
+async function addToGuestbook() {
+  const username = usernameInput.value.trim();
+  const error = validateUsernameLocal(username);
+  
+  if (error) {
+    usernameError.textContent = error;
+    return;
+  }
+  
+  usernameError.textContent = '';
+  addBtn.disabled = true;
+  
+  try {
+    const res = await fetch('/api/guestbook', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username })
+    });
+    
+    if (!res.ok) {
+      const data = await res.json();
+      usernameError.textContent = data.error || 'Erreur';
+      return;
+    }
+    
+    usernameInput.value = '';
+    loadGuestbook();
+  } catch(e) {
+    usernameError.textContent = 'Erreur. Réessayez.';
+  } finally {
+    addBtn.disabled = false;
+  }
+}
+
+function esc(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+upload.onchange = e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    preview.src = ev.target.result;
+    previewContainer.style.display = 'block';
+    originalImage = new Image();
+    originalImage.src = ev.target.result;
+    download.style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+};
+
+function applyFilter() {
+  if (!originalImage) return;
+  canvas.width = originalImage.width;
+  canvas.height = originalImage.height;
+  ctx.drawImage(originalImage, 0, 0);
+  
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const data = imageData.data;
+  const targetR = 255, targetG = 255, targetB = 4;
+  const strength = 0.7;
+  
+  for (let i = 0; i < data.length; i += 4) {
+    data[i] = data[i] + (targetR - data[i]) * strength;
+    data[i+1] = data[i+1] + (targetG - data[i+1]) * strength;
+    data[i+2] = data[i+2] + (targetB - data[i+2]) * strength;
+  }
+  
+  ctx.putImageData(imageData, 0, 0);
+  preview.src = canvas.toDataURL();
+  download.href = canvas.toDataURL();
+  download.style.display = 'inline-block';
+}
+
+loadGuestbook();
+</script>
+</body>
+</html>

@@ -1,7 +1,13 @@
-// ponytail: minimal serverless proxy for guestbook
-const BIN_ID = process.env.GUESTBOOK_BIN || 'pja_' + Math.random().toString(36).substring(2, 15);
+// Vercel Serverless Function for Supabase guestbook
+// Set SUPABASE_URL and SUPABASE_KEY in Vercel project settings
 
-// Simple in-memory rate limiter
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_KEY;
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+// Rate limiter: 10 requests per minute per IP
 const rateLimit = new Map();
 
 function checkRateLimit(ip) {
@@ -9,10 +15,8 @@ function checkRateLimit(ip) {
   const key = ip || 'global';
   const entry = rateLimit.get(key) || { count: 0, last: 0 };
   
-  if (now - entry.last < 60000) { // 1 minute window
-    if (entry.count >= 10) {
-      return false; // Too many requests
-    }
+  if (now - entry.last < 60000) {
+    if (entry.count >= 10) return false;
     entry.count++;
   } else {
     entry.count = 1;
@@ -24,9 +28,8 @@ function checkRateLimit(ip) {
 
 function validateUsername(username) {
   if (!username || typeof username !== 'string') return false;
-  // Only allow @ followed by alphanumeric, dots, underscores
-  if (!/^@?[a-zA-Z0-9_.]{1,50}$/.test(username)) return false;
-  // Basic XSS prevention
+  if (username.length > 50) return false;
+  if (!/^@?[a-zA-Z0-9_.]+$/.test(username)) return false;
   if (/[<>&'"\/]/.test(username)) return false;
   return true;
 }
@@ -35,41 +38,38 @@ export default async function handler(req, res) {
   const ip = req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || 'unknown';
   
   if (!checkRateLimit(ip)) {
-    return res.status(429).json({ error: 'Trop de requêtes' });
+    return res.status(429).json({ error: 'Too many requests' });
   }
 
-  if (req.method === 'GET') {
-    try {
-      const response = await fetch(`https://www.jsonstore.io/${BIN_ID}`);
-      const data = await response.json();
+  try {
+    if (req.method === 'GET') {
+      const { data, error } = await supabase
+        .from('guestbook')
+        .select('username')
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
       res.setHeader('Cache-Control', 'no-store');
-      res.status(200).json(data);
-    } catch (e) {
-      res.status(200).json({ result: [] });
+      res.json({ result: data.map(row => row.username) });
     }
-  } else if (req.method === 'POST') {
-    try {
+    else if (req.method === 'POST') {
       const { username } = req.body;
       if (!validateUsername(username)) {
-        return res.status(400).json({ error: 'Nom invalide' });
+        return res.status(400).json({ error: 'Invalid username' });
       }
       
-      const response = await fetch(`https://www.jsonstore.io/${BIN_ID}`);
-      const data = await response.json();
-      const list = data.result || [];
-      list.push(username);
+      const { error } = await supabase
+        .from('guestbook')
+        .insert([{ username }]);
       
-      await fetch(`https://www.jsonstore.io/${BIN_ID}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(list)
-      });
-      
-      res.status(200).json({ success: true });
-    } catch (e) {
-      res.status(500).json({ error: 'Erreur serveur' });
+      if (error) throw error;
+      res.json({ success: true });
     }
-  } else {
-    res.status(405).json({ error: 'Méthode non autorisée' });
+    else {
+      res.status(405).json({ error: 'Method not allowed' });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Server error' });
   }
 }

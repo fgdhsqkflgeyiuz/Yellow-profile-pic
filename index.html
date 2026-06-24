@@ -3,54 +3,66 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Profil Jaune #FFFF04</title>
+<title>Yellow Tinted Profile Pic</title>
 <style>
-  *{box-sizing:border-box}
-  body{font-family:Arial,sans-serif;margin:0;padding:15px;text-align:center;background:#f5f5f5;min-height:100vh;display:flex;flex-direction:column}
-  .content{flex:1}
-  h1{color:#FFD700;margin-bottom:5px}
-  .box{background:white;padding:15px;border-radius:10px;margin:15px 0;box-shadow:0 2px 5px rgba(0,0,0,0.1)}
-  input[type=file],button,input[type=text]{width:100%;max-width:400px;margin:8px 0;padding:12px;border:1px solid #ddd;border-radius:5px;font-size:16px}
-  button{background:#FFD700;cursor:pointer;border:none;color:#333;font-weight:bold}
-  button:active{background:#e6c200}
-  button:disabled{background:#ccc;cursor:not-allowed}
-  #preview{max-width:100%;max-height:300px;object-fit:contain;margin:15px auto;border-radius:8px;display:block}
-  #guestbook{text-align:left;margin-top:20px}
-  #guestbook ul{list-style:none;padding:0;margin:0}
-  #guestbook li{padding:8px 0;border-bottom:1px solid #eee;word-break:break-all}
-  .legal{font-size:12px;color:#666;line-height:1.5}
-  .error{color:#d32f2f;font-size:14px;margin-top:5px}
-  @media (max-width:480px){body{padding:10px}.box{padding:12px}}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;line-height:1.5;color:#333;background:#fafafa;min-height:100vh;display:flex;flex-direction:column}
+  .container{max-width:500px;margin:0 auto;padding:20px;width:100%}
+  .card{background:#fff;border-radius:12px;padding:24px;margin-bottom:20px;box-shadow:0 1px 3px rgba(0,0,0,0.05)}
+  h1{font-size:28px;font-weight:600;color:#333;margin-bottom:8px}
+  h2{font-size:20px;font-weight:600;color:#333;margin-bottom:12px}
+  p{color:#666;font-size:15px;margin-bottom:16px}
+  .input-group{margin-bottom:16px}
+  input[type=file],input[type=text]{width:100%;padding:12px 16px;border:1px solid #e0e0e0;border-radius:8px;font-size:15px;background:#fff}
+  input:focus{outline:none;border-color:#333}
+  button{width:100%;padding:12px 16px;background:#FFD700;border:none;border-radius:8px;font-size:15px;font-weight:600;color:#333;cursor:pointer;transition:background 0.2s}
+  button:hover{background:#e6c200}
+  button:active{background:#d4b000}
+  button:disabled{background:#f0f0f0;cursor:not-allowed}
+  #preview{width:100%;max-height:300px;object-fit:contain;border-radius:8px;margin:16px 0}
+  #download{display:inline-block;padding:12px 24px;background:#333;color:#fff;border-radius:8px;text-decoration:none;font-weight:600;margin-top:8px}
+  #download:hover{background:#222}
+  .guestbook-list{margin-top:16px}
+  .guestbook-list li{padding:8px 0;border-bottom:1px solid #f0f0f0;color:#444;list-style:none}
+  .legal{font-size:12px;color:#999;line-height:1.6}
+  .legal strong{color:#666}
+  .error{color:#d32f2f;font-size:14px;margin-top:4px}
+  .success{color:#2e7d32;font-size:14px;margin-top:4px}
+  .hidden{display:none}
+  .loading{opacity:0.7;pointer-events:none}
+  @media (max-width:480px){.container{padding:16px}.card{padding:16px}}
 </style>
 </head>
 <body>
-<div class="content">
-<h1>Profil Jaune #FFFF04</h1>
-
-<div class="box">
-  <p>Transformez votre photo de profil avec un filtre jaune #FFFF04</p>
-  <input type="file" id="upload" accept="image/*">
-  <div id="preview-container" style="display:none">
-    <img id="preview">
-    <button onclick="applyFilter()">Appliquer le filtre jaune</button>
-    <canvas id="canvas" style="display:none"></canvas>
-    <a id="download" style="display:none" download="profil-jaune.png">Télécharger</a>
+<div class="container">
+  <h1>Yellow Tinted Profile Pic</h1>
+  
+  <div class="card">
+    <p>Apply a yellow tint to your profile picture</p>
+    <input type="file" id="upload" accept="image/*">
+    <div id="preview-container" class="hidden">
+      <img id="preview">
+      <button onclick="applyFilter()" style="margin-top:16px">Apply Yellow Tint</button>
+      <canvas id="canvas" class="hidden"></canvas>
+      <a id="download" class="hidden">Download Yellow Profile</a>
+    </div>
   </div>
-</div>
 
-<div class="box">
-  <h2>Livre d'or</h2>
-  <p>Ajoutez votre @Instagram après avoir converti votre photo</p>
-  <input type="text" id="username" placeholder="@votre_nom" maxlength="50">
-  <div id="username-error" class="error"></div>
-  <button id="add-btn" onclick="addToGuestbook()">Ajouter</button>
-  <div id="guestbook"><ul id="guestlist"></ul></div>
-</div>
-</div>
+  <div class="card">
+    <h2>Guestbook</h2>
+    <p>Add your Instagram @ after converting your photo</p>
+    <div class="input-group">
+      <input type="text" id="username" placeholder="@yourname" maxlength="50">
+      <div id="username-error" class="error"></div>
+      <div id="username-success" class="success"></div>
+    </div>
+    <button id="add-btn" onclick="addToGuestbook()">Add to Guestbook</button>
+    <ul id="guestlist" class="guestbook-list"></ul>
+  </div>
 
-<div class="box legal">
-  <h3>Mentions légales</h3>
-  <p>Ce service est gratuit et fourni tel quel, sans garantie. Les noms d'utilisateur ajoutés au livre d'or sont publics et <strong>ne peuvent pas être supprimés</strong>. En utilisant ce service, vous acceptez que votre pseudonyme soit affiché publiquement. Nous ne sommes pas responsables de l'utilisation des informations que vous partagez. Ce site ne collecte aucune autre donnée personnelle. L'ajout de noms est limité à 10 par minute par adresse IP pour prévenir les abus.</p>
+  <div class="card legal">
+    <p>Free service, no warranty. Usernames are public and <strong>cannot be removed</strong>. We are not responsible for shared information. This site collects no personal data. Limited to 10 entries per minute per device.</p>
+  </div>
 </div>
 
 <script>
@@ -64,39 +76,46 @@ const usernameInput = document.getElementById('username');
 const guestlist = document.getElementById('guestlist');
 const addBtn = document.getElementById('add-btn');
 const usernameError = document.getElementById('username-error');
+const usernameSuccess = document.getElementById('username-success');
 
 let originalImage = null;
 
-// ponytail: server-side guestbook via vercel function
+// Load guestbook from Supabase via serverless function
 async function loadGuestbook() {
   try {
     const res = await fetch('/api/guestbook');
     const data = await res.json();
     const list = data.result || [];
     guestlist.innerHTML = list.map(u => `<li>${esc(u)}</li>`).join('');
-  } catch(e) { guestlist.innerHTML = '<li>Erreur de chargement</li>'; }
+  } catch(e) {
+    console.error('Guestbook load error:', e);
+    guestlist.innerHTML = '<li>Could not load guestbook</li>';
+  }
 }
 
-function validateUsernameLocal(username) {
-  if (!username) return 'Veuillez entrer un nom';
-  if (username.length > 50) return 'Trop long (max 50 caractères)';
+function validateUsername(username) {
+  if (!username) return 'Please enter a name';
+  if (username.length > 50) return 'Too long (max 50 characters)';
   if (!/^@?[a-zA-Z0-9_.]+$/.test(username)) {
-    return 'Seuls @, lettres, chiffres, . et _ sont autorisés';
+    return 'Only @, letters, numbers, . and _ allowed';
   }
   return null;
 }
 
 async function addToGuestbook() {
   const username = usernameInput.value.trim();
-  const error = validateUsernameLocal(username);
+  const error = validateUsername(username);
   
   if (error) {
     usernameError.textContent = error;
+    usernameSuccess.textContent = '';
     return;
   }
   
   usernameError.textContent = '';
+  usernameSuccess.textContent = '';
   addBtn.disabled = true;
+  addBtn.classList.add('loading');
   
   try {
     const res = await fetch('/api/guestbook', {
@@ -105,18 +124,22 @@ async function addToGuestbook() {
       body: JSON.stringify({ username })
     });
     
+    const data = await res.json();
+    
     if (!res.ok) {
-      const data = await res.json();
-      usernameError.textContent = data.error || 'Erreur';
+      usernameError.textContent = data.error || 'Error adding to guestbook';
       return;
     }
     
+    usernameSuccess.textContent = 'Added! Refresh to see in guestbook.';
     usernameInput.value = '';
-    loadGuestbook();
+    setTimeout(() => usernameSuccess.textContent = '', 3000);
+    setTimeout(loadGuestbook, 1000);
   } catch(e) {
-    usernameError.textContent = 'Erreur. Réessayez.';
+    usernameError.textContent = 'Error. Please try again.';
   } finally {
     addBtn.disabled = false;
+    addBtn.classList.remove('loading');
   }
 }
 
@@ -132,10 +155,12 @@ upload.onchange = e => {
   const reader = new FileReader();
   reader.onload = ev => {
     preview.src = ev.target.result;
-    previewContainer.style.display = 'block';
+    previewContainer.classList.remove('hidden');
     originalImage = new Image();
+    originalImage.onload = () => {
+      download.classList.add('hidden');
+    };
     originalImage.src = ev.target.result;
-    download.style.display = 'none';
   };
   reader.readAsDataURL(file);
 };
@@ -152,18 +177,22 @@ function applyFilter() {
   const strength = 0.7;
   
   for (let i = 0; i < data.length; i += 4) {
-    data[i] = data[i] + (targetR - data[i]) * strength;
-    data[i+1] = data[i+1] + (targetG - data[i+1]) * strength;
-    data[i+2] = data[i+2] + (targetB - data[i+2]) * strength;
+    data[i] = Math.min(255, data[i] + (targetR - data[i]) * strength);
+    data[i+1] = Math.min(255, data[i+1] + (targetG - data[i+1]) * strength);
+    data[i+2] = Math.min(255, data[i+2] + (targetB - data[i+2]) * strength);
   }
   
   ctx.putImageData(imageData, 0, 0);
   preview.src = canvas.toDataURL();
   download.href = canvas.toDataURL();
-  download.style.display = 'inline-block';
+  download.classList.remove('hidden');
 }
 
+// Load guestbook on page load
 loadGuestbook();
+// Refresh every 30 seconds
+setInterval(loadGuestbook, 30000);
 </script>
 </body>
 </html>
+

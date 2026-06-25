@@ -21,18 +21,20 @@
   .file-input-label{display:block;width:100%;padding:14px 18px;background:#FFD700;color:#121212;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;text-align:center;transition:all 0.2s}
   .file-input-label:hover{background:#e6c200;transform:translateY(-1px)}
   .file-input-label:active{background:#d4b000;transform:translateY(0)}
-  .file-input-label.activated{background:#2a2a2a;color:#888;border:2px solid #FFD700}
+  .file-input-label.activated{background:#2a2a2a;color:#888;border:2px solid #888800}
   button{width:100%;padding:14px 18px;background:#FFD700;color:#121212;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;transition:all 0.2s}
   button:hover{background:#e6c200;transform:translateY(-1px);box-shadow:0 4px 12px rgba(255,215,0,0.2)}
   button:active{background:#d4b000;transform:translateY(0)}
   button:disabled{background:#444;color:#888;cursor:not-allowed;transform:none}
-  button.completed{background:#2a2a2a;color:#888;border:2px solid #FFD700}
+  button.completed{background:#2a2a2a;color:#888;border:2px solid #888800}
   #preview{width:100%;max-height:300px;object-fit:contain;border-radius:8px;margin:16px 0;background:#222}
   #download{width:100%;padding:14px 18px;margin-top:12px}
   .guestbook-list{margin-top:16px}
   .guestbook-list li{padding:10px 0;border-bottom:1px solid #2a2a2a;color:#d0d0d0;list-style:none}
-  .legal{font-size:12px;color:#666;line-height:1.6}
+  .legal{font-size:12px;color:#666;line-height:1.6;margin-bottom:12px}
   .legal strong{color:#999}
+  .legal a{color:#888;text-decoration:none}
+  .legal a:hover{color:#FFD700;text-decoration:underline}
   .error{color:#ff6b6b;font-size:14px;margin-top:4px}
   .success{color:#51cf66;font-size:14px;margin-top:4px}
   .hidden{display:none}
@@ -76,7 +78,8 @@
   </div>
 
   <div class="card legal">
-    <p>Free service, no warranty. Usernames are public and <strong>cannot be removed</strong>. We are not responsible for shared information. This site collects no personal data. Limited to 10 entries per minute per device.</p>
+    <p>Free service, no warranty. Usernames are public. <strong>Note:</strong> Users cannot remove their own usernames once submitted, but the site owner reserves the right to remove any username at their discretion (e.g., inappropriate content). This site collects no personal data. Limited to 10 entries per minute per device.</p>
+    <p><a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ" target="_blank">Further information</a></p>
   </div>
 </div>
 

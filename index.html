@@ -44,7 +44,7 @@
       <img id="preview">
       <button onclick="applyFilter()" style="margin-top:16px">Apply Yellow Tint</button>
       <canvas id="canvas" class="hidden"></canvas>
-      <a id="download" class="hidden">Download Yellow Profile</a>
+      <button id="download" class="hidden" onclick="downloadImage()">Download Yellow Profile</button>
     </div>
   </div>
 
@@ -184,8 +184,14 @@ function applyFilter() {
   
   ctx.putImageData(imageData, 0, 0);
   preview.src = canvas.toDataURL();
-  download.href = canvas.toDataURL();
   download.classList.remove('hidden');
+}
+
+function downloadImage() {
+  const link = document.createElement('a');
+  link.download = 'yellow-profile.png';
+  link.href = canvas.toDataURL();
+  link.click();
 }
 
 // Load guestbook on page load

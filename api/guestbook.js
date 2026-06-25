@@ -1,10 +1,16 @@
 // Vercel Serverless Function for Supabase guestbook
 // Set SUPABASE_URL and SUPABASE_KEY in Vercel project settings
+// Uses CommonJS for broader compatibility
 
-import { createClient } from '@supabase/supabase-js';
+const { createClient } = require('@supabase/supabase-js');
 
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_KEY;
+
+if (!supabaseUrl || !supabaseKey) {
+  console.error('Missing Supabase environment variables');
+}
+
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Rate limiter: 10 requests per minute per IP
@@ -34,7 +40,7 @@ function validateUsername(username) {
   return true;
 }
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   const ip = req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || 'unknown';
   
   if (!checkRateLimit(ip)) {
@@ -53,7 +59,13 @@ export default async function handler(req, res) {
       res.json({ result: data.map(row => row.username) });
     }
     else if (req.method === 'POST') {
-      const { username } = req.body;
+      let body;
+      try {
+        body = JSON.parse(req.body);
+      } catch (e) {
+        body = req.body;
+      }
+      const { username } = body;
       if (!validateUsername(username)) {
         return res.status(400).json({ error: 'Invalid username' });
       }
@@ -69,7 +81,7 @@ export default async function handler(req, res) {
       res.status(405).json({ error: 'Method not allowed' });
     }
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Server error' });
+    console.error('Supabase error:', error);
+    res.status(500).json({ error: 'Server error: ' + (error.message || String(error)) });
   }
-}
+};
